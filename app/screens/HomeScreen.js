@@ -9,6 +9,7 @@ class HomeScreen extends Component {
         this.state = {
             stepsCounter: "0 STEPS",
             appState: AppState.currentState,
+            pastStepsCount: 0
         }
     }
 
@@ -70,6 +71,17 @@ class HomeScreen extends Component {
         }
     };
 
+    pastSteps = (data) => {
+        console.log("SKK", data)
+        this.setState({
+            pastStepsCount: data
+        })
+    }
+
+    errorPastSteps = (data) => {
+        console.log("SKK", data)
+    }
+
     render() {
         return (
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
@@ -81,6 +93,12 @@ class HomeScreen extends Component {
                 <Text onPress={() => {
                     RNStepCounterModule.stopStepper()
                 }}>Stop Stepper</Text>
+
+                <Text>{"Past Steps: " + this.state.pastStepsCount}</Text>
+
+                <Text onPress={() => {
+                    RNStepCounterModule.getPastTime(4, this.pastSteps, this.errorPastSteps)
+                }}>Get Past Date Step Count</Text>
             </View>
         );
     }

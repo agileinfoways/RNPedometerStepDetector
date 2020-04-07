@@ -7,12 +7,14 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.facebook.react.uimanager.IllegalViewOperationException;
 import com.rnstepcounterdemo.steps.bean.DbUtils;
 import com.rnstepcounterdemo.steps.bean.SharedPreferencesUtils;
 import com.rnstepcounterdemo.steps.bean.StepData;
@@ -24,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -97,6 +100,31 @@ public class RNStepCounterModule extends ReactContextBaseJavaModule {
                 mServiceIntent = new Intent(reactContext, StepService.class);
                 removeData();
             }
+        }
+    }
+
+    @ReactMethod
+    public void getPastTime(int pastDays, Callback successCallback, Callback errorCallback) {
+        try {
+            Date date = new Date(System.currentTimeMillis());
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            calendar.add(Calendar.DAY_OF_YEAR, -(pastDays));
+            Date newDate = calendar.getTime();
+//            Timber.e("SKK" + date);
+            SimpleDateFormat sdf = new SimpleDateFormat(Constant.STEP_DATE_FORMAT, DEFAULT_LOCALE);
+
+            List<StepData> list = DbUtils.getQueryByWhere(StepData.class, "stepsDate",
+                    new String[]{sdf.format(newDate)});
+
+            if (!list.isEmpty()) {
+                StepData data = list.get(0);
+                successCallback.invoke(Integer.parseInt(data.getStepsCount()));
+            } else {
+                successCallback.invoke(0);
+            }
+        } catch (IllegalViewOperationException e) {
+            errorCallback.invoke(e.getMessage());
         }
     }
 
